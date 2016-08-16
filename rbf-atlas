@@ -1,0 +1,225 @@
+
+
+<html>
+
+<head>
+<title>RBF Atlas - BlueSquare</title>
+  <link rel="stylesheet" href="http://cartodb-libs.global.ssl.fastly.net/cartodbui/assets/3.16.11/stylesheets/cartodb.css" />
+<script src="http://libs.cartocdn.com/cartodb.js/v3/cartodb.js"></script>
+  </script>
+  
+  <!--[if lte IE 8]>
+    <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/themes/css/cartodb.ie.css" />
+  <![endif]-->
+
+  
+  
+  <style id="jsbin-css">
+    
+<style id="jsbin-css">
+    html, body { width:800px; height:100%; padding: 0; margin: 0;}
+    #map { width: 100%; height:100%; }
+    #menu { position: absolute; top: 5px; right: 50px; width: 200px;  background: transparent; z-index:10;}
+    #menu a {
+     
+      height: 10px;
+      margin: 1px 10px 0 0;
+      float: left;
+      vertical-align: middle;
+      width: 200px;
+      padding: 10px;
+      text-align: left;
+      font: bold 11px "Helvetica",Arial;
+      line-height: normal;
+      color: #555;
+      border-radius: 2px;
+      border: 1px solid #777777;
+      background: #ffffff;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    #menu a.selected,
+    #menu a:hover {
+      color: #ffffff;
+      background: #111485;
+    }
+#logo { position: absolute; bottom: 20px; left: 10px;  background: transparent; z-index:2000000; line-height: 0px;}
+#filters {font-family: Helvetica,Arial; font-size: 15px; font-weight:bold;   margin-bottom: 3px; color: #111485}
+
+#description {font-family: Helvetica,Arial; font-size: 11px;color: #555;    margin-bottom: 3px; color: #111485;position: absolute; top: 15px; left: 55px;z-index:2000000; display: none;}
+
+#rbftitle {margin-left:10px; margin:0px; font-family: Helvetica,Arial; font-size: 55px;color: #555; font-weight:bold;    color: #111485}
+</style>
+</head>
+
+
+  <body onLoad="init()">
+  <div id='map'> </div>
+<div id='menu'>
+   <p id="filters">SELECT FILTER:</p>
+   <a href="#all" id="all" class="button all">ALL RBF PROJECTS</a>
+<a href="#opendata" id="opendata" class="button opendata">OPEN DATA</a>
+<a href="#bluesquare" id="bluesquare" class="button bluesquare">BLUESQUARES PROJECT</a>
+<a href="#system" id="system" class="button system">RBF/DIHS2</a>
+<a href="#tablets" id="tablets" class="button tablets">TABLETS FOR QUALITY</a>
+<a href="#mobile" id="mobile" class="button mobile">MOBILES FOR PATIENT FEEDBACK</a>
+
+<a href="#facilities" id="facilities" class="button facilities">FACILITIES 2015</a>
+
+<a href="#facilities2016" id="facilities2016" class="button facilities2016">FORECAST FACILITIES 2016</a>
+
+</div>
+  <div id='logo'>
+   <p id="rbftitle" ><img src="http://www.bluesquare.org/assets/images/logo@2x.png" style="height:70px;margin-left:8px;"><img src="http://www.rbfwiki.org/images/thumb/6/6b/LogoPBF.png/400px-LogoPBF.png" style="height:70px; margin-left:15px;">RBF Atlas</p>
+
+</div>
+<script> </script>
+<script id="jsbin-javascript">
+var map;
+function init(){
+// initiate leaflet map
+map = new L.Map('map', {
+center: [15.779995, 15.8761826],
+zoom: 3
+});
+ 
+L.tileLayer('http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
+}).addTo(map);
+var layerUrl = 'https://eignatova.cartodb.com/api/v2/viz/cf5f92aa-31d5-11e5-9924-0e0c41326911/viz.json';
+ 
+var sublayers = [];
+ 
+cartodb.createLayer(map, layerUrl)
+.addTo(map)
+.on('done', function(layer) {
+// change the query for the first layer
+var subLayerOptions = {
+sql: "SELECT * FROM rbf_health"
+};
+ 
+var sublayer = layer.getSubLayer(0);
+sublayer.setInteraction(false);
+var projects = layer.getSubLayer(1);
+
+var facilities = layer.getSubLayer(2);
+ facilities.hide();
+var investments = layer.getSubLayer(3);
+ investments.hide();
+  
+
+  var facilities2015=0;
+  var facilities2016=0;
+   
+ 
+sublayer.set(subLayerOptions);
+ 
+sublayers.push(sublayer, projects, facilities, investments);
+}).on('error', function() {
+//log the error
+});
+  
+$('.button').click(function() {
+
+  
+$('.button').removeClass('selected');
+$(this).addClass('selected');
+
+
+  
+LayerActions[$(this).attr('id')]();
+});
+var LayerActions = {
+all: function(){
+	sublayers[0].setSQL("SELECT * FROM rbf_health");
+  	sublayers[1].setSQL("SELECT * FROM rbf_health_dots");
+  	sublayers[2].setSQL("SELECT * FROM rbf_health_dots").hide();
+  	sublayers[3].setSQL("SELECT * FROM rbf_health_dots").hide();
+  	facilities2015=0;
+facilities2016=0;
+return true;
+},
+opendata: function(){
+sublayers[0].setSQL("SELECT * FROM rbf_health where opendata = 'Y'");
+sublayers[1].setSQL("SELECT * FROM rbf_health_dots where opendata = 'Y'");
+sublayers[3].hide();
+sublayers[2].hide(); 
+
+
+return true;
+},
+bluesquare: function(){
+	
+
+  sublayers[0].setSQL("SELECT * FROM rbf_health where bluesquare= 'true'");
+   sublayers[1].setSQL("SELECT * FROM rbf_health_dots where bluesquare= 'true'");
+   sublayers[3].hide();
+   sublayers[2].hide();
+
+
+return true;
+},
+system: function(){
+		sublayers[0].setSQL("SELECT * FROM rbf_health WHERE data_system!='Other' ");
+		sublayers[1].setSQL("SELECT * FROM rbf_health_dots WHERE data_system!='Other'");
+		sublayers[2].hide();
+		sublayers[3].hide();
+
+return true;
+},
+facilities: function(){
+	sublayers[0].setSQL("SELECT * FROM rbf_health");
+			sublayers[3].setSQL("SELECT * FROM rbf_health_dots ").show();
+			sublayers[2].setSQL("SELECT * FROM rbf_health_dots ");
+			sublayers[1].setSQL("SELECT * FROM rbf_health_dots");
+			
+
+if (facilities2016 ==1){
+	$('#facilities2016').addClass('selected');
+} 
+
+	facilities2015=1;
+
+
+return true;
+},
+facilities2016: function(){
+	sublayers[0].setSQL("SELECT * FROM rbf_health");
+			sublayers[2].setSQL("SELECT * FROM rbf_health_dots ").show();
+			sublayers[3].setSQL("SELECT * FROM rbf_health_dots ");
+			sublayers[1].setSQL("SELECT * FROM rbf_health_dots ");;
+			
+			if (facilities2015==1) {
+				$('#facilities').addClass('selected');
+			} 
+
+facilities2016=1;
+return true;
+},
+tablets: function(){
+	
+  sublayers[0].setSQL("SELECT * FROM rbf_health where tablets_for_quality = 'true'");
+  sublayers[1].setSQL("SELECT * FROM rbf_health_dots where tablets_for_quality = 'true'");
+  sublayers[3].hide();
+   sublayers[2].hide();
+
+return true;
+},
+mobile: function(){
+	
+
+  sublayers[0].setSQL("SELECT * FROM rbf_health where mobiles_for_patient_feedback = 'true'");
+   sublayers[1].setSQL("SELECT * FROM rbf_health_dots where mobiles_for_patient_feedback = 'true'");
+   sublayers[3].hide();
+   sublayers[2].hide();
+  
+
+return true;
+}
+};
+}
+
+
+</script>
+</body>
+  
+</html>
