@@ -1,0 +1,466 @@
+
+<html>
+
+<head>
+<title>South Kivu Stockout Map</title>
+  <link rel="stylesheet" href="http://cartodb-libs.global.ssl.fastly.net/cartodbui/assets/3.16.11/stylesheets/cartodb.css" />
+<script src="http://libs.cartocdn.com/cartodb.js/v3/cartodb.js"></script>
+  
+  
+  <!--[if lte IE 8]>
+    <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/themes/css/cartodb.ie.css" />
+  <![endif]-->
+
+  
+  
+  <style id="jsbin-css">
+  <style id="jsbin-css">  
+
+    html, body { width:800px; height:100%; padding: 0; margin: 0;}
+    #map { width: 100%; height:100%; }
+	#info { position: absolute; top: 25px; left: 50px; width: 350px;  background: white; z-index:10;
+	
+	padding: 10px;
+    text-align: left;
+    font: bold 11px "Helvetica",Arial;}
+	
+	
+    #menu { position: absolute; top: 25px; right: 50px; width: 350px;  background: transparent; z-index:10;}
+    #menu a {
+         height: 10px;
+    margin: 1px 10px 0 0;
+    float: left;
+    vertical-align: middle;
+    padding: 10px;
+    text-align: left;
+    font: bold 11px "Helvetica",Arial;
+    line-height: normal;
+    color: #555;
+    border-radius: 2px;
+    border: 1px solid #777777;
+    background: #ffffff;
+    text-decoration: none;
+    cursor: pointer;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    }
+    #menu a.selected,
+    #menu a:hover {
+      color: #ffffff;
+      background: #111485;
+    }
+#logo { position: absolute; bottom: 20px; left: 10px;  background: transparent; z-index:2000000; line-height: 0px;}
+#filters {font-family: Helvetica,Arial; font-size: 15px; font-weight:bold;   margin-bottom: 3px; color: #111485}
+
+#description {font-family: Helvetica,Arial; font-size: 11px;color: #555;    margin-bottom: 3px; color: #111485;position: absolute; top: 15px; left: 55px;z-index:2000000; display: none;}
+
+#rbftitle {margin-left:10px; margin:0px; font-family: Helvetica,Arial; font-size: 24px;color: #555; font-weight:bold;    color: #111485}
+
+button.accordion {
+    background-color: #00a0c6;
+    color: #fff;
+    cursor: pointer;
+    padding: 18px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 15px;
+    transition: 0.4s;
+}
+
+button.accordion.active, button.accordion:hover {
+    background-color: #111485;
+}
+
+button.accordion:after {
+    content: '\02795';
+    font-size: 13px;
+    color: #777;
+    float: right;
+    margin-left: 5px;
+}
+
+button.accordion.active:after {
+    content: "\2796";
+}
+
+div.panel {
+    padding: 0 18px;
+    background-color: white;
+    max-height: 0;
+    overflow: hidden;
+    transition: 0.6s ease-in-out;
+    opacity: 0;
+}
+
+div.panel.show {
+    opacity: 1;
+    max-height: 700px;  
+}
+
+.numbers_equp {
+	font-size: 16px;
+	font-weight: bolder;
+}
+p {
+	font-family: verdana;
+    font-size: 13px;
+	font-weight: normal;
+	}
+  </style>
+</head>
+
+
+  <body onLoad="init()">
+  <div id='map'> </div>
+  
+  <div id="info">
+  <p id="rbftitle" >South Kivu: <br>
+    Stock-outs in Health Centers</p>
+  <p>The map displays information on the stock-outs on essential drugs, basic eqipment, and vaccines in the South Kivu region,  Democratic Republic of the Congo. The data presented is for <strong>February 2016</strong>.</p>
+  <p>Click on each dot to see entity related information.</p>
+  
+  <p>More information on the covered health facilities, can be seen on the RBF portal: <a href="http://health.pbfsudkivu.org/" target="_blank">health.pbfsudkivu.org</a></p><br/>
+  <p ><strong>Developed by: </strong></p>
+  
+  <table>
+  <tr>
+  <td width="96"><a href="http://bluesquare.org" target="_blank"><img src="http://www.bluesquare.org/assets/images/logo@2x.png" style="height:70px;margin-left:8px;"></a></td>
+  <td width="222"><p>@<a href="https://twitter.com/bluesquare_org" target="_blank">BlueSquare_org</br></br> 
+    </a><a href="https://www.facebook.com/BlueSquare.org" target="_blank">fb.me/BlueSquare.org</a></p></td>
+  </tr>
+  </table>
+  
+  
+  
+  </div>
+<div id='menu'>
+   <button class="accordion">Basic Equipment Stockout :: Filter</button>
+<div class="panel">
+
+<a href="#scalesadults" id="scalesadults" class="button">Scales for adults</a>
+<a href="#scaleschildren" id="scaleschildren" class="button">Scales fron children</a>
+<a href="#lamps" id="lamps" class="button">Lamps</a>
+<a href="#stethoscopes" id="stethoscopes" class="button">Stethoscopes</a>
+<a href="#tensiometers" id="tensiometers" class="button">Tensiometers</a>
+<a href="#thermometers" id="thermometers" class="button">Thermometers</a>
+
+</div>
+
+<button class="accordion">Vaccines Stockout :: Filter</button>
+<div id="foo" class="panel">
+  <a href="#all" id="all" class="button all">ALL</a>
+<a href="#bcg" id="bcg" class="button opendata">BCG</a>
+<a href="#diluants" id="diluants" class="button bluesquare">Diluants</a>
+<a href="#dtc" id="dtc" class="button system">DTC</a>
+<a href="#rr" id="rr" class="button tablets">RR</a>
+<a href="#vat" id="vat" class="button mobile">VAT</a>
+<a href="#vpo" id="vpo" class="button facilities">VPO</a>
+</div>
+
+<button class="accordion">Essential Drugs Stockout :: Filter</button>
+<div class="panel">
+<a href="#all" id="all" class="button all">ALL</a>
+<a href="#ess16" id="ess16" class="button Mebendazole">Mebendazole 100 mg cp</a>
+<a href="#ess26" id="ess26" class="button ess26">Sulphate de Fer 200 mg cp</a>
+<a href="#ess7" id="ess7" class="button ess7">Co-trimoxazol 480 mg cp</a>
+<a href="#ess6" id="ess6" class="button ess6">Co-trimoxazol 40mg, 200mg - 5ml susp</a>
+<a href="#ess10" id="ess10" class="button ess10">Doxycycline 100 mg caps</a>
+<a href="#ess11" id="ess11" class="button ess11">Erythromycine 250 mg cp</a>
+<a href="#ess5" id="ess5" class="button ess5">Co-artemeter 20/120 onglet mg</a>
+<a href="#ess25" id="ess25" class="button ess25">Sulfadoxine/pyrimethamine 500 mg cp</a>
+<a href="#ess24" id="ess24" class="button ess24">SRO sachet</a>
+<a href="#ess13" id="ess13" class="button ess13">Gants steriles</a>
+<a href="#ess1" id="ess1" class="button ess1">Cathlon 18G</a>
+<a href="#ess2" id="ess2" class="button ess2">Cathlon 22G</a>
+<a href="#ess19" id="ess19" class="button ess19">Perfuseur</a>
+<a href="#ess14" id="ess14" class="button ess14">Serum glucose 5% 1L</a>
+<a href="#ess4" id="ess4" class="button ess4">Ciprofloxacine 500 mg cp</a>
+<br/>
+
+</div>
+
+
+
+</div>
+<script> </script>
+<script id="jsbin-javascript">
+var map;
+function init(){
+// initiate leaflet map
+map = new L.Map('map', {
+center: [-2.23601984341, 28.8309234357],
+zoom: 10
+});
+ 
+L.tileLayer('http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
+}).addTo(map);
+var layerUrl = 'https://eignatova.cartodb.com/api/v2/viz/43415368-e200-11e5-b5c3-0ecd1babdde5/viz.json';
+ 
+var sublayers = [];
+ 
+cartodb.createLayer(map, layerUrl)
+.addTo(map)
+.on('done', function(layer) {
+// change the query for the first layer
+var subLayerOptions = {
+sql: "SELECT * FROM skv_quality_indicators"
+};
+var countries = layer.getSubLayer(0);
+ var regions = layer.getSubLayer(1);
+var sublayer = layer.getSubLayer(2);
+//sublayer.setInteraction(false);
+var benef = layer.getSubLayer(3);
+
+
+   
+ 
+sublayer.set(subLayerOptions);
+ 
+sublayers.push(sublayer, benef);
+}).on('error', function() {
+//log the error
+});
+  
+$('.button').click(function() {
+
+  
+$('.button').removeClass('selected');
+$(this).addClass('selected');
+
+
+  
+LayerActions[$(this).attr('id')]();
+});
+var LayerActions = {
+all: function(){
+	sublayers[0].setSQL("SELECT * FROM skv_quality_indicators");
+  	sublayers[1].setSQL("SELECT * FROM skv_quality_indicators");
+return true;
+},
+bcg: function(){
+sublayers[0].setSQL("SELECT * FROM skv_quality_indicators where immunization_data_bcg = 'true'");
+sublayers[1].setSQL("SELECT * FROM skv_quality_indicators where immunization_data_bcg = 'true'");
+
+
+
+return true;
+},
+diluants: function(){
+
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators where immunization_data_diluants = 'true'");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators where immunization_data_diluants = 'true'").hide;
+
+return true;
+},
+dtc: function(){
+		sublayers[0].setSQL("SELECT * FROM skv_quality_indicators where immunization_data_dtc = 'true' ");
+		sublayers[1].setSQL("SELECT * FROM skv_quality_indicators where immunization_data_dtc = 'true'");
+return true;
+},
+rr: function(){
+	sublayers[0].setSQL("SELECT * FROM skv_quality_indicators where immunization_data_rr = 'true'");
+			sublayers[1].setSQL("SELECT * FROM skv_quality_indicators where immunization_data_rr = 'true'");
+			
+	
+return true;
+},
+vat: function(){
+	sublayers[0].setSQL("SELECT * FROM skv_quality_indicators where immunization_data_vat = 'true'");
+	sublayers[1].setSQL("SELECT * FROM skv_quality_indicators where immunization_data_vat = 'true'");
+			
+return true;
+},
+vpo: function(){
+	
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators where immunization_data_vpo = 'true'");
+  sublayers[1].setSQL("SELECT * FROM skv_quality_indicators where immunization_data_vpo = 'true'");
+return true;
+},
+ess1: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators where essential_drugs_data_cathlon18  IN (true)");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators where essential_drugs_data_cathlon18   IN (true)");
+return true;
+},
+ess2: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators where essential_drugs_data_cathlon22  IN (true)");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators where essential_drugs_data_cathlon22  IN (true)");
+return true;
+},
+ess3: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators where essential_drugs_data_chlorpheniramine  IN (true)");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators where essential_drugs_data_chlorpheniramine  IN (true)");
+return true;
+},
+ess4: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators where essential_drugs_data_ciprofloxacine  IN (true)");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_ciprofloxacine  IN (true)");
+return true;
+},
+ess5: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators where essential_drugs_data_co_artemeter  IN (true)");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_co_artemeter  IN (true)");
+return true;
+},
+ess6: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators where essential_drugs_data_co_trimoxazol40  IN (true)");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_co_trimoxazol40  IN (true)");
+return true;
+},
+ess7: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators where essential_drugs_data_co_trimoxazol480  IN (true)");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_co_trimoxazol480  IN (true)");
+return true;
+},
+ess8: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators where essential_drugs_data_condom  IN (true)");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_condom  IN (true)");
+return true;
+},
+ess9: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_depoprovera  IN (true)");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_depoprovera  IN (true)");
+return true;
+},
+ess10: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_doxycycline  IN (true)");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_doxycycline  IN (true)");
+return true;
+},
+ess11: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_erythromycine  IN (true)");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_erythromycine IN (true)");
+return true;
+},
+ess12: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_gants_non_steriles IN (true)");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_gants_non_steriles IN (true)");
+return true;
+},
+ess13: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_gants_steriles IN (true)");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_gants_steriles IN (true)");
+return true;
+},
+ess14: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_glucose IN (true)");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_glucose IN (true)");
+return true;
+},
+ess15: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_ibuprofene  IN (true)");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_ibuprofene IN (true)");
+return true;
+},
+ess16: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_mebendazole IN (true)");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_mebendazole IN (true)");
+return true;
+},
+ess17: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_ocytocine  IN (true)");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_ocytocine IN (true)");
+return true;
+},
+ess18: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_paracetamol IN (true)");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_paracetamol IN (true)");
+return true;
+},
+ess19: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_perfuseur  IN (true)");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_perfuseur IN (true)");
+return true;
+},
+ess20: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_plaquette_contraceptive IN (true)");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_plaquette_contraceptive  IN (true)");
+return true;
+},
+ess21: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_ringer  IN (true)");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_ringer  IN (true)");
+return true;
+},
+ess22: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_seringue10  IN (true)");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_seringue10 IN (true)");
+return true;
+},
+ess23: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_seringue5 IN (true)");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_seringue5 IN (true)");
+return true;
+},
+ess24: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_sro IN (true)");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_sro IN (true)");
+return true;
+},
+ess25: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_sulfadoxine_pyrimethamine IN (true)");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_sulfadoxine_pyrimethamine IN (true)");
+return true;
+},
+ess26: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_sulphate IN (true)");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_sulphate IN (true)");
+return true;
+},
+ess27: function(){
+  sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_sulphate_zinc IN (true)");
+   sublayers[2].setSQL("SELECT * FROM skv_quality_indicators WHERE essential_drugs_data_sulphate_zinc IN (true)");
+return true;
+},
+scalesadults: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators WHERE number_appliances_balance_pour_adultes = 0");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE number_appliances_balance_pour_adultes = 0");
+return true;
+},
+scaleschildren: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators WHERE number_appliances_balnace_pour_enfants = 0");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE number_appliances_balnace_pour_enfants = 0");
+return true;
+},
+lamps: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators WHERE number_appliances_lampes = 0");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE number_appliances_lampes = 0");
+return true;
+},
+stethoscopes: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators WHERE number_appliances_stethoscope = 0");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE number_appliances_stethoscope = 0");
+return true;
+},
+tensiometers: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators WHERE number_appliances_tensiometre = 0");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE number_appliances_tensiometre = 0");
+return true;
+},
+thermometers: function(){
+  sublayers[0].setSQL("SELECT * FROM skv_quality_indicators WHERE number_appliances_thermometre = 0");
+   sublayers[1].setSQL("SELECT * FROM skv_quality_indicators WHERE number_appliances_thermometre = 0");
+return true;
+}
+};
+}
+
+
+</script>
+
+<script>
+var acc = document.getElementsByClassName("accordion");
+var i;
+
+for (i = 0; i < acc.length; i++) {
+	
+    acc[i].onclick = function(){
+        this.classList.toggle("active");
+        this.nextElementSibling.classList.toggle("show");
+  }
+}
+</script>
+</body>
+  
+</html>
